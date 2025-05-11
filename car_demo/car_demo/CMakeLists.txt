@@ -59,10 +59,10 @@ target_link_libraries(${PROJECT_NAME}
         yaml-cpp
         )
 
-add_executable(prius_controller_node
+add_executable(car_demo_prius_controller_node
         src/prius_controller_node.cpp)
 
-target_link_libraries(prius_controller_node
+target_link_libraries(car_demo_prius_controller_node
         ${PROJECT_NAME}
         ${catkin_LIBRARIES}
         )
@@ -71,7 +71,7 @@ target_link_libraries(prius_controller_node
 catkin_install_python(PROGRAMS nodes/joystick_translator
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-install(TARGETS PriusHybridPlugin ${PROJECT_NAME} prius_controller_node
+install(TARGETS PriusHybridPlugin ${PROJECT_NAME} car_demo_prius_controller_node
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
