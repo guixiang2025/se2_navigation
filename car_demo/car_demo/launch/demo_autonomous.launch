@@ -44,7 +44,7 @@
 	</node>
 	<node pkg="tf2_ros" type="static_transform_publisher"
 		name="very_inaccurate_odom" args="0 0 0 0 0 0 odom base_link" />
-	<node pkg="car_demo" type="prius_controller_node"
+	<node pkg="car_demo" type="car_demo_prius_controller_node"
 		name="prius_controller_node" output="screen" launch-prefix="" />
 
 	<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
