@@ -17,15 +17,49 @@
   <node pkg="fake_localization" type="fake_localization" name="fake_localization">
     <remap from="base_pose_ground_truth" to="/prius/base_pose_ground_truth"/> 
   </node>
+  
+  <!-- 添加静态TF变换发布器 -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="very_inaccurate_odom" args="0 0 0 0 0 0 odom base_link"/>
-  <node pkg="car_demo" type="joystick_translator" name="joystick_translator"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 map odom"/>
+  
+  <!-- 为缺少的传感器链接添加TF变换 -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_back_camera" args="-1.0 0 0.5 0 0 0 base_link back_camera_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_back_camera_optical" args="-1.0 0 0.5 -1.57 0 -1.57 base_link back_camera_link_optical"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_camera" args="1.0 0 0.5 0 0 0 base_link front_camera_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_camera_optical" args="1.0 0 0.5 -1.57 0 -1.57 base_link front_camera_link_optical"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_left_camera" args="0 0.5 0.5 0 0 1.57 base_link left_camera_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_left_camera_optical" args="0 0.5 0.5 -1.57 0 0 base_link left_camera_link_optical"/>
+  
+  <!-- 添加声纳和激光传感器TF变换 -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_center_laser" args="0 0 0.7 0 0 0 base_link center_laser_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_right_laser" args="0.8 -0.3 0.4 0 0 0 base_link front_right_laser_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_back_left_far_sonar" args="-0.8 0.3 0.4 0 0 0 base_link back_left_far_sonar_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_back_left_middle_sonar" args="-0.6 0.4 0.4 0 0 0.5 base_link back_left_middle_sonar_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_back_right_far_sonar" args="-0.8 -0.3 0.4 0 0 0 base_link back_right_far_sonar_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_back_right_middle_sonar" args="-0.6 -0.4 0.4 0 0 -0.5 base_link back_right_middle_sonar_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_left_far_sonar" args="0.8 0.3 0.4 0 0 0 base_link front_left_far_sonar_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_left_middle_sonar" args="0.6 0.4 0.4 0 0 0.5 base_link front_left_middle_sonar_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_right_middle_sonar" args="0.6 -0.4 0.4 0 0 -0.5 base_link front_right_middle_sonar_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_right_far_sonar" args="0.8 -0.3 0.4 0 0 0 base_link front_right_far_sonar_link"/>
+  
+  <!-- 添加车轮TF变换 -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_fl_axle" args="0.5 0.3 0.1 0 0 0 base_link fl_axle"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_fr_axle" args="0.5 -0.3 0.1 0 0 0 base_link fr_axle"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_left_wheel" args="0.5 0.3 0.1 0 0 0 base_link front_left_wheel"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_right_wheel" args="0.5 -0.3 0.1 0 0 0 base_link front_right_wheel"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_front_left_laser" args="0.5 0.3 0.3 0 0 0 base_link front_left_laser_link"/>
+  
+  <!-- 配置摇杆转换器 -->
+  <node pkg="car_demo" type="joystick_translator" name="joystick_translator">
+    <param name="steering_axis" value="0"/>
+    <param name="throttle_axis" value="1"/>
+  </node>
 
-  <!-- Run two joy nodes publishing to the same topic, just to cover two possible joystick locations -->
+  <!-- 运行摇杆节点 -->
   <node pkg="joy" type="joy_node" name="joy_node0">
     <param name="dev" value="/dev/input/js0"/>
-  </node>
-  <node pkg="joy" type="joy_node" name="joy_node1">
-    <param name="dev" value="/dev/input/js1"/>
+    <param name="deadzone" value="0.05"/>
+    <param name="autorepeat_rate" value="20"/>
   </node>
 
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 3 -y -12 -z 0.5 -model prius"/>

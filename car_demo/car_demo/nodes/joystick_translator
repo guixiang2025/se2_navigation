@@ -19,12 +19,20 @@ import rospy
 from prius_msgs.msg import Control
 from sensor_msgs.msg import Joy
 
-STEERING_AXIS = 0
-THROTTLE_AXIS = 4
+# 默认轴映射 - 这些可以通过参数覆盖
+STEERING_AXIS = 0  # 方向盘轴
+THROTTLE_AXIS = 1  # 油门/刹车轴 (修改为1，适配Parallels Virtual Mouse)
 
 
 class Translator:
     def __init__(self):
+        # 从参数获取轴映射，如果没有设置则使用默认值
+        self.steering_axis = rospy.get_param('~steering_axis', STEERING_AXIS)
+        self.throttle_axis = rospy.get_param('~throttle_axis', THROTTLE_AXIS)
+        
+        rospy.loginfo("使用 steering_axis=%d, throttle_axis=%d", 
+                     self.steering_axis, self.throttle_axis)
+        
         self.sub = rospy.Subscriber("joy", Joy, self.callback)
         self.pub = rospy.Publisher('prius_controls', Control, queue_size=1)
         self.last_published_time = rospy.get_rostime()
@@ -36,14 +44,29 @@ class Translator:
             self.callback(self.last_published)
 
     def callback(self, message):
-        rospy.logdebug("joy_translater received axes %s", message.axes)
+        rospy.logdebug("joy_translator 接收到轴数据 %s", message.axes)
+        
+        # 检查摇杆是否有足够的轴
+        if len(message.axes) <= self.throttle_axis or len(message.axes) <= self.steering_axis:
+            rospy.logwarn("摇杆没有足够的轴 (有 %d 个, 至少需要 %d 个). "
+                          "请检查您的摇杆并更新轴映射.",
+                          len(message.axes), max(self.throttle_axis, self.steering_axis) + 1)
+            return
+            
+        # 检查摇杆是否有足够的按钮
+        if len(message.buttons) < 4:
+            rospy.logwarn("摇杆没有足够的按钮 (有 %d 个, 至少需要 4 个). "
+                          "请检查您的摇杆配置.",
+                          len(message.buttons))
+            return
+            
         command = Control()
         command.header = message.header
-        if message.axes[THROTTLE_AXIS] >= 0:
-            command.throttle = message.axes[THROTTLE_AXIS]
+        if message.axes[self.throttle_axis] >= 0:
+            command.throttle = message.axes[self.throttle_axis]
             command.brake = 0.0
         else:
-            command.brake = message.axes[THROTTLE_AXIS] * -1
+            command.brake = message.axes[self.throttle_axis] * -1
             command.throttle = 0.0
 
         if message.buttons[3]:
@@ -55,7 +78,7 @@ class Translator:
         else:
             command.shift_gears = Control.NO_COMMAND
 
-        command.steer = message.axes[STEERING_AXIS]
+        command.steer = message.axes[self.steering_axis]
         self.last_published = message
         self.pub.publish(command)
 
